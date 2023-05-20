@@ -1,1 +1,1 @@
-"""This package contains everything related to sniffing"""
+'''This package contains everything related to sniffing'''

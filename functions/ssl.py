@@ -1,1 +1,1 @@
-"""This package contains everything related to SSL stripping"""
+'''This package contains everything related to SSL stripping'''
