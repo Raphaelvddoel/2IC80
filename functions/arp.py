@@ -22,7 +22,7 @@ def restore_arp(dest_ip, source_ip):
                        psrc=source_ip, hwsrc=source_mac)
     send(packet, count=4, verbose=False)
 
-def mim(target_1_ip, target_2_ip):
+def mitm(target_1_ip, target_2_ip):
     '''This sets up a man in the middle between the two provided target IPs'''
     sent_packets_count = 0
     try:
