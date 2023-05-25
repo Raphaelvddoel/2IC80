@@ -9,14 +9,15 @@ def cli():
     pass
 
 @cli.command()
-def arp(source, victim):
+def arp():
     click.echo('This ARP poisons')
 
 @cli.command()
 @click.option('-s', '--source', type=str, help='The intended victim')
 @click.option('-v', '--victim', type=str, help='The intended victim')
 def arp_v(victim):
-    click.echo(poison(victim))
+    click.echo('ARP Poisoning...')
+    poison(victim)
 
 @cli.command()
 @click.option('-d', '--destination', type=str, help='The destination IP for ARP restoration')
