@@ -25,6 +25,31 @@ def target_mac(ip): # _ translate to - so the command will be target-mac
     click.echo(get_target_mac(ip))
 
 
+# DNS
+@cli.command
+@click.option('--single', is_flag=True, help='single domain to run the dns attack on')
+@click.option('--add-domain', is_flag=True, help='add domain to list of available domains to spoof')
+@click.option('--remove-domain', is_flag=True, help='add domain to list of available domains to spoof')
+@click.option('--show-domains', is_flag=True, help='add domain to list of available domains to spoof')
+def dns(single, add_domain, remove_domain, show_domains):
+    if add_domain:
+        add_dns_domain()
+        return
+    
+    if remove_domain:
+        remove_dns_domain()
+        return
+    
+    if show_domains:
+        show_dns_domains()
+        return
+
+    if single:
+        spoof_dns_single(single)
+
+    spoof_dns()
+
+
 # ---- testing ----
 @cli.command()
 @click.option('-n', '--name', type=str, help='your first name', default='john')
