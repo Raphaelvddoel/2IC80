@@ -45,9 +45,10 @@ def dns(single, add_domain, remove_domain, show_domains):
         return
 
     if single:
-        spoof_dns_single(single)
+        spoof_dns_single()
 
-    spoof_dns()
+    # Spoof all stored domains
+    spoof_dns_all()
 
 
 # ---- testing ----
