@@ -1,5 +1,6 @@
 import click
 import json
+import re
 
 FILENAME = 'storage/domains.json'
 
@@ -11,6 +12,16 @@ def add_dns_domain():
     domain = click.prompt('Which domain do you want to spoof?')
     ip = click.prompt('Which IP should it route to?')
 
+    domain = strip_domain(domain)
+
+    if not validate_domain(domain):
+        click.echo('invalid domain')
+        return
+
+    if not validate_ip(ip):
+        click.echo('invalid ip')
+        return
+    
     data = get_domains()
 
     data[domain] = ip
@@ -29,6 +40,10 @@ def remove_dns_domain():
         click.echo(f'{index}) {key}: {value}')
 
     index = click.prompt('Please enter the number of the domain/ip combination that you want te remove')
+
+    if not validate_index(index):
+        click.echo('Invalid input')
+        return
 
     # Convert index to key
     index = int(index)  # Convert the input to an integer
@@ -64,3 +79,44 @@ def get_domains():
 def store_domains(data):
     with open(FILENAME, 'w') as file:
         json.dump(data, file, indent=4, separators=(',', ': '))
+
+
+def validate_index(index, data):
+    if not index.isdigit():
+        return False
+
+    index = int(index)
+    data_length = len(data)
+
+    if 1 <= index <= data_length:
+        return True
+    else:
+        return False
+
+
+def strip_domain(domain):
+    # Strip leading "www." if present
+    if domain.startswith("www."):
+        return domain[4:]
+    
+    return domain
+
+
+def validate_domain(domain):
+    # Regular expression pattern for domain validation
+    pattern = r"^(?!:\/\/)(?:[a-zA-Z0-9-_]+\.){1,}[a-zA-Z]{2,}$"
+    
+    if re.match(pattern, domain):
+        return True
+
+    return False
+
+
+def validate_ip(ip):
+    # Regular expression pattern for IP validation
+    pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+    
+    if re.match(pattern, ip):
+        return True
+
+    return False
