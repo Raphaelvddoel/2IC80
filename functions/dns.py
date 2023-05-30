@@ -16,7 +16,7 @@ def spoof_dns_all():
 
 
 def spoof_dns_single():
-    domain = click.prompt('Which domain do you want to spoof?')
+    domain = click.prompt('Which domain do you want to spoof? Please enter the domain without www.')
     ip = click.prompt('Which IP should it route to?')
 
     attack({domain: ip})

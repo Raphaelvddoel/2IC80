@@ -9,7 +9,7 @@ def add_dns_domain():
     Add domain to list of stored domains used when dns spoofing
     '''
     
-    domain = click.prompt('Which domain do you want to spoof?')
+    domain = click.prompt('Which domain do you want to spoof? Please enter the domain without www.')
     ip = click.prompt('Which IP should it route to?')
 
     domain = strip_domain(domain)
