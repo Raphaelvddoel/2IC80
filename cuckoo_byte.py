@@ -31,13 +31,7 @@ def target_mac(ip): # _ translate to - so the command will be target-mac
 @click.option('--add-domain', is_flag=True, help='add domain to list of available domains to spoof')
 @click.option('--remove-domain', is_flag=True, help='add domain to list of available domains to spoof')
 @click.option('--show-domains', is_flag=True, help='add domain to list of available domains to spoof')
-@click.option('--background', is_flag=True, help='Determines whether attack should continously run in the background')
-@click.option('--stop-attack', is_flag=True, help='Stops background attack')
-def dns(single, add_domain, remove_domain, show_domains, background, stop_attack):
-    if stop_attack:
-        attack_background_stop()
-        return
-
+def dns(single, add_domain, remove_domain, show_domains):
     if add_domain:
         add_dns_domain()
         return
@@ -51,11 +45,11 @@ def dns(single, add_domain, remove_domain, show_domains, background, stop_attack
         return
 
     if single:
-        spoof_dns_single(background)
+        spoof_dns_single()
         return
 
     # Spoof all stored domains
-    spoof_dns_all(background)
+    spoof_dns_all()
 
 
 # ---- testing ----
