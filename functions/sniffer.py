@@ -1,44 +1,13 @@
 import click
 import nmap
 from scapy.all import sniff, ARP
-from scapy.all import *
-import ipaddress
+import re
+import sys
 
-#sniffer runs for 20 seconds; count is in seconds
-def sniffer(count=20):
-    #this only catches it if i do arp -d in admin cmd, why?
-    #this might not catch all ip adresses on local network
-    print('start sniffing')
-    packets = sniff(timeout=count, filter="arp")
-    #packets = sniff(count=count, filter="arp")
-    print('ended sniffing')
-    print('printing all ips now')
-    #this function only gives the ports of the ip adress if you do: arp -d, others like ping will keep running inf??????
-    process_packet(packets)
-
+networkAddress = ""
 unique_ips = []
 
-def process_packet(packets):
-    #all ips we are going to print at the end 
-    #unique_ips = []
-    for n in packets:
-        #add all unique ip adresses to unique adress
-        #ip_address = n.psrc
-        ip_address = n.pdst
-        if ip_address not in unique_ips:
-            unique_ips.append(ip_address)
-    #print all ips found
-    for n in unique_ips:
-        print(n)
-
-#fucntion to check if something is an actual ip adress
-def validate_ip_address(ip_string):
-   try:
-       ip_object = ipaddress.ip_address(ip_string)
-   except ValueError:
-       print(ip_object)
-       print('is not an ip adress')
-
+#
 def scan_ports(target_ip):
     scanner = nmap.PortScanner()
     #I can only check open ports for my own ip adress, the router makes it run forever
@@ -49,18 +18,57 @@ def scan_ports(target_ip):
         for port in scanner[host].all_tcp():
             if scanner[host]['tcp'][port]['state'] == 'open':
                 print('Port:', port, 'is open')
-                
+
+def sniffing():
+    sniff(prn=find_ips, timeout=16)
+
+def find_ips(packet):
+    #print(networkAddress)
+    if 'IP' in packet:
+        src_ip = packet['IP'].src
+        dst_ip = packet['IP'].dst  
+
+        if src_ip[0:len(networkAddress)] == networkAddress:
+            if src_ip not in unique_ips:
+                unique_ips.append(src_ip)
+        if dst_ip[0:len(networkAddress)] == networkAddress:
+            if dst_ip not in unique_ips:
+                unique_ips.append(dst_ip)
+
+def validate_ipv4_blocks(ip_blocks):
+    pattern = r'^\d{1,3}\.\d{1,3}\.\d{1,3}$'
+    match = re.match(pattern, ip_blocks)
+
+    return match is not None
 
 
 
+#networkAddress = ""
 # lines to actually run it:
 @click.command()
 def main():
-    sniffer()
-    #input integer works?
+
+    #have to put global here since otherwise it acts as if networkAddress remains unchanged
+    global networkAddress
+    networkAddress = click.prompt("first 3 blocks of ipv4 like. 1.1.1 \n")
+
+    #check if the input was a proper first 3 blocks of an actual ip address, if not do again untill it is
+    while True:
+        if validate_ipv4_blocks(networkAddress):
+            break
+        else:
+            networkAddress = click.prompt("Invalid try another one")
+    
+    
+    #start sniffing (filtered on the partial ip address from earlier)
+    print("start sniffing")
+    sniffing()
+    #print all caught ip addresses
+    for n in unique_ips:
+        print(n)
     # wait for an ip adress as input
-    input_value = click.prompt("Enter an ip adress you want to ....")
-    #put this in a loop continue makes it 
+    input_value = click.prompt("Pick the number corresponding to the IP you want")
+    #put this in a loop untill proper input is given
     while True:
         try: 
             input_value = int(input_value)
@@ -69,24 +77,13 @@ def main():
             input_value = click.prompt('invalid input please enter an integer')
             continue
 
-        #if not isinstance(input_value, int):
-        #    #print('please give an integer')
-        #    input_value = click.prompt("please enter an integer ")
-        #    continue
-        #input_value = int(input_value)
-        #input_value = input_value - 1
-
         if (input_value < 0) or (input_value >= len(unique_ips)):
             #print('please give an integer between 1 and' len(unique_ips))
             input_value = click.prompt("please enter an integer between 1 and " + str(len(unique_ips)))
             continue
-
-        if validate_ip_address(unique_ips[input_value]):
-            input_value = click.prompt("The chosen ip adress is not valid")
-            continue
         break
-    click.echo('We will now print all open ports for the chosen ip adress')
-    print(unique_ips[input_value])
+    click.echo('We will now print all open ports for ' + str(unique_ips[input_value]))
+    #call a function to get all open ports for given ip
     scan_ports(unique_ips[input_value])
 
 
