@@ -50,6 +50,12 @@ def target_mac(ip, interface): # _ translate to - so the command will be target-
     '''Get the mac adress of a specified IP adress'''
     click.echo(f'Target MAC address: {get_target_mac(ip, interface)}')
 
+# ------------------------------------------------ SSL-Strip ----------------------------------------------- #
+@cli.command()
+@click.option('-p', '--port', type=str, help='The port number you want to put the stripping process on')
+def ssl_strip(port): # _ translate to - so the command will be ssl-strip
+    '''Start ssl stripping websites that want transition to HTTPS'''
+    ssl_strip_prepped(port)
 
 # ---- testing ----
 # @cli.command()
