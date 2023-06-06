@@ -20,7 +20,9 @@ def get_my_ip_mac(interface):
         interface = conf.iface
     return {'ip': get_if_addr(interface), 'mac': get_if_hwaddr(interface)}
 
-def get_target_mac(ip):
+def get_target_mac(ip, interface):
+    if interface == "":
+        interface = conf.iface
     # Create arp packet object. pdst - destination host ip address
     arp_request = ARP(pdst=ip)
     # Create ether packet object. dst - broadcast mac address. 
@@ -29,6 +31,6 @@ def get_target_mac(ip):
     arp_request_broadcast = broadcast/arp_request
     # Get list with answered hosts
     answered_list = srp(arp_request_broadcast, timeout=1,
-                              verbose=False)[0]
-    # Return host mac address
+                              verbose=False, iface=interface)[0]
+    
     return answered_list[0][1].hwsrc

