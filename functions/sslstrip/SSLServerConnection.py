@@ -111,12 +111,3 @@ class SSLServerConnection(ServerConnection):
             self.buildAbsoluteLink(match.group(10))
 
         return data
-
-    # CHANGE?: added function?
-    # def sendHeaders(self):
-    #     for header, value in self.headers.items():
-    #         if header == 'origin' or header == 'referer':
-    #             value = value.replace('http://', 'https://')
-    #         logging.log(self.getLogLevel(), "Sending header: %s : %s" % (header, value))
-    #         self.sendHeader(header.encode('utf-8'), value.encode('utf-8'))
-    #     self.endHeaders()
