@@ -105,7 +105,7 @@ class ServerConnection(HTTPClient):
 
         if (decoded_key.lower() == 'content-type'):
             # CHANGE? or decoded_value.find('font') != -1):
-            if (decoded_value.find('image') != -1):
+            if (decoded_value.find('image') != -1 or decoded_value.find('font') != -1):
                 self.isImageRequest = True
                 logging.debug("Response is image content, not scanning...")
 
@@ -147,32 +147,32 @@ class ServerConnection(HTTPClient):
             data = gzip.GzipFile('', 'rb', 9, BytesIO(data)).read()
         
         # CHANGE? Changed logging
-        # logging.log(self.getLogLevel(), "Read from server:")
-        # logging.log(self.getLogLevel(), data)
-        logging.log(self.getLogLevel(), "Read from server:\n" + data)
+        logging.log(self.getLogLevel(), "Read from server:")
+        logging.log(self.getLogLevel(), data)
+        # logging.log(self.getLogLevel(), "Read from server:\n" + data)
 
         # CHANGE: decoding & encoding
-        decoded_data = data.decode('utf-8')
-        data = self.replaceSecureLinks(decoded_data).encode('utf-8')
+        # decoded_data = data.decode('utf-8')
+        # data = self.replaceSecureLinks(decoded_data).encode('utf-8')
         
         # CHANGE?: Try and except
-        # try: 
-        #     # CHANGE: decoding & encoding
-        #     decoded_data = data.decode('utf-8')
-        #     data = self.replaceSecureLinks(decoded_data).encode('utf-8')
-        # except:
-        #     pass
+        try: 
+            # CHANGE: decoding & encoding
+            decoded_data = data.decode('utf-8')
+            data = self.replaceSecureLinks(decoded_data).encode('utf-8')
+        except:
+            pass
 
         if (self.contentLength != None):
             # CHANGE: changed int to string
             self.client.setHeader('Content-Length', str(len(data)))
         
         # CHANGE?: Try and except
-        # try:
-        self.client.write(data)
-        self.shutdown()
-        # except:
-        #     pass
+        try:
+            self.client.write(data)
+            self.shutdown()
+        except:
+            pass
 
     def replaceSecureLinks(self, data):
         iterator = re.finditer(ServerConnection.urlExpression, data)

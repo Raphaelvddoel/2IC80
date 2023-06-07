@@ -143,13 +143,13 @@ class ClientRequest(Request):
             logging.debug("Host not cached.")
             return reactor.resolve(host)
 
-    # def process(self):
-    #     logging.debug("Resolving host: %s" % (self.getHeader('host')))
-    #     host     = self.getHeader('host')               
-    #     deferred = self.resolveHost(host)
+    def process(self):
+        logging.debug("Resolving host: %s" % (self.getHeader('host')))
+        host     = self.getHeader('host')               
+        deferred = self.resolveHost(host)
 
-    #     deferred.addCallback(self.handleHostResolvedSuccess)
-    #     deferred.addErrback(self.handleHostResolvedError)
+        deferred.addCallback(self.handleHostResolvedSuccess)
+        deferred.addErrback(self.handleHostResolvedError)
         
     def proxyViaHTTP(self, host, method, path, postData, headers):
         connectionFactory          = ServerConnectionFactory(method, path, postData, headers, self)
