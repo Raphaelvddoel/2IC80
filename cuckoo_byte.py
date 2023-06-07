@@ -44,7 +44,7 @@ def ls_if(): # _ translate to - so the command will be ls-if
 @click.option('-i', '--ip', type=str, help='The IP of the target you want the mac address of')
 def target_mac(ip): # _ translate to - so the command will be target-mac
     '''Get the mac adress of a specified IP adress'''
-    click.echo(f'Target MAC address: {get_target_mac(ip)}')
+    click.echo(f'Target MAC address: {get_target_mac(ip, "eth0")}')
 
 
 # ---- testing ----
