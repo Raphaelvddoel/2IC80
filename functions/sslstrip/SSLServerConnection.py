@@ -47,7 +47,7 @@ class SSLServerConnection(ServerConnection):
     def handleHeader(self, key, value):
         # CHANGE: Decoded key
         decoded_key = key.decode('utf-8')
-        encoded_changed_value = ''
+        encoded_changed_value = value
         if (decoded_key.lower() == 'set-cookie'):
             # CHANGE: decoded value
             decoded_value = value.decode('utf-8')
