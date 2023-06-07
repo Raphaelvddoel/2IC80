@@ -1,5 +1,6 @@
 import click
 from functions import *
+import sniffer
 
 @click.group()
 def cli():
@@ -31,3 +32,8 @@ def target_mac(ip): # _ translate to - so the command will be target-mac
 @click.option('-l', '--last-name', type=str, help='your last name', default='doe')
 def test(name, last_name):
     click.echo(f'hello {name} {last_name}')
+
+
+@cli.command()
+def testing_snif(ip): # _ translate to - so the command will be target-mac
+    sniffer.main()
