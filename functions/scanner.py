@@ -70,6 +70,10 @@ def get_devices(target_ip):
 
 
 def print_devices(devices):
+    '''
+    Prints IP and MAC of every device found on the subnetwork
+    '''
+
     click.echo("Available devices in the network:")
     click.echo("IP" + " "*18+"MAC")
     for device in devices:
@@ -78,6 +82,10 @@ def print_devices(devices):
 
 
 def handle_followup(devices):
+    '''
+    Handles followup action of user after scanning network
+    '''
+
     click.echo("What would you like to do?")
     click.echo("1) Scan ports of a specific IP.")
     click.echo("2) ARP spoof a specific IP.")
@@ -96,12 +104,20 @@ def handle_followup(devices):
 
 
 def handle_port_scan(devices):
+    '''
+    Handles port scan followup
+    '''
+
     ip = get_specific_ip(devices)
 
     scan_ports(ip)
 
 
 def handle_arp_spoof(devices):
+    '''
+    Handles followup to ARP spoofing
+    '''
+
     victim_ip = get_specific_ip(devices)
 
     spoof_ip = click.prompt("Which IP do you want to impersonate?")
@@ -110,11 +126,17 @@ def handle_arp_spoof(devices):
 
 
 def get_specific_ip(devices):
+    '''
+    Gets a specific IP from list of devices chosen by user
+    '''
+
+    # Print all devices
     for index, device in enumerate(devices):
         click.echo(f'{index}) {device["ip"]}')
 
     input = click.prompt("Please select the index of the IP that you want to choose")
 
+    # Repeat question until input is valid
     while not input == 'stop' and not validate_index(input, devices):
         input = click.prompt("Please select the index of the IP that you want to choose, or type 'stop'")
 
@@ -122,6 +144,10 @@ def get_specific_ip(devices):
 
 
 def scan_ports(target_ip):
+    '''
+    Scans all open ports of chosen IP
+    '''
+
     scanner = nmap.PortScanner()
     scanner.scan(target_ip, arguments='-p 1-65535') 
     for host in scanner.all_hosts():
