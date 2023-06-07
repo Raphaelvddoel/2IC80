@@ -36,16 +36,16 @@ class ServerConnectionFactory(ClientFactory):
 
         destination = connector.getDestination()
 
-        # if (destination.port != 443):
-        #     logging.debug("Retrying via SSL")
-        #     self.client.proxyViaSSL(self.headers['host'], self.command, self.uri, self.postData, self.headers, 443)
-        # else:
-        #     self.client.finish()
+        if (destination.port != 443):
+            logging.debug("Retrying via SSL")
+            self.client.proxyViaSSL(self.headers['host'], self.command, self.uri, self.postData, self.headers, 443)
+        else:
+            self.client.finish()
 
 
         # CHANGE?: Flip check
-        if (destination.port == 443):
-            logging.debug("Retrying via HTTP")
-            self.client.proxyViaHTTP(self.headers['host'], self.command, self.uri, self.postData, self.headers, 443)
-        else:
-            self.client.finish()
+        # if (destination.port == 443):
+        #     logging.debug("Retrying via HTTP")
+        #     self.client.proxyViaHTTP(self.headers['host'], self.command, self.uri, self.postData, self.headers, 443)
+        # else:
+        #     self.client.finish()

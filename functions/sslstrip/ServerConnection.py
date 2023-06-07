@@ -115,7 +115,6 @@ class ServerConnection(HTTPClient):
         elif (decoded_key.lower() == 'content-length'):
             self.contentLength = value
         elif (decoded_key.lower() == 'set-cookie'):
-            # TEST normal key
             self.client.responseHeaders.addRawHeader(key, value)
         else:
             self.client.setHeader(key, value)

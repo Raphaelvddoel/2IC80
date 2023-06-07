@@ -116,11 +116,6 @@ class ClientRequest(Request):
         elif (self.urlMonitor.isSecureFavicon(client, path)):
             logging.debug("Sending spoofed favicon response...")
             self.sendSpoofedFaviconResponse()
-        # # CHANGE?: Dont send request over HTTP
-        # else:
-        #     logging.debug("Sending request via SSL...")
-        #     self.proxyViaSSL(address, self.method, path, postData, headers,
-        #                      self.urlMonitor.getSecurePort(client, url))
         elif (self.urlMonitor.isSecureLink(client, url)):
             logging.debug("Sending request via SSL...")
             self.proxyViaSSL(address, self.method, path, postData, headers,
