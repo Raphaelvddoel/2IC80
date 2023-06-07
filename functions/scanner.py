@@ -154,10 +154,10 @@ def scan_ports(target_ip):
     scanner = nmap.PortScanner()
     scanner.scan(target_ip, arguments='-p 1-65535') 
     for host in scanner.all_hosts():
-        print("Open ports for", host, ":")
+        click.echo("Open ports for", host, ":")
         for port in scanner[host].all_tcp():
             if scanner[host]['tcp'][port]['state'] == 'open':
-                print('Port:', port, 'is open')
+                click.echo('Port:', port, 'is open')
 
 
 def validate_index(input, devices):
