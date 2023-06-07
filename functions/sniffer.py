@@ -42,11 +42,7 @@ def validate_ipv4_blocks(ip_blocks):
     return match is not None
 
 
-
-#networkAddress = ""
-# lines to actually run it:
-@click.command()
-def main():
+def sniffer():
 
     #have to put global here since otherwise it acts as if networkAddress remains unchanged
     global networkAddress
@@ -85,9 +81,3 @@ def main():
     click.echo('We will now print all open ports for ' + str(unique_ips[input_value]))
     #call a function to get all open ports for given ip
     scan_ports(unique_ips[input_value])
-
-
-
-
-if __name__ == '__main__':
-    main()

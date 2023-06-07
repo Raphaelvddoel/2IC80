@@ -1,6 +1,5 @@
 import click
 from functions import *
-import sniffer
 
 @click.group()
 def cli():
@@ -25,6 +24,9 @@ def ls_if(): # _ translate to - so the command will be ls-if
 def target_mac(ip): # _ translate to - so the command will be target-mac
     click.echo(get_target_mac(ip))
 
+@cli.command()
+def sniff():
+    sniffer()
 
 # ---- testing ----
 @cli.command()
