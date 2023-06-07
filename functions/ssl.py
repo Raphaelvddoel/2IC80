@@ -49,5 +49,6 @@ def ssl_strip_prepped(listen_port, log_file='sslstrip.log', log_level=logging.WA
         set_ip_forwarding()
         start_ssl_strip(log_file, log_level, listen_port)
     except KeyboardInterrupt:
+        print("stopping ssl-strip, please wait")
         set_ip_forwarding(False)
         setup_iptables_redirect(listen_port, True)
