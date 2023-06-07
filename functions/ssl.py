@@ -31,8 +31,8 @@ def start_ssl_strip(log_file, log_level, listen_port):
     logging.basicConfig(level=log_level, format='%(asctime)s %(message)s',
                         filename=log_file, filemode='w')
 
-    URLMonitor.getInstance().setFaviconSpoofing(True)
-    CookieCleaner.getInstance().setEnabled(True)
+    URLMonitor.getInstance().setFaviconSpoofing(False)
+    CookieCleaner.getInstance().setEnabled(False)
 
     strippingFactory              = http.HTTPFactory(timeout=10)
     strippingFactory.protocol     = StrippingProxy

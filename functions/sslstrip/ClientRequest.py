@@ -83,7 +83,7 @@ class ClientRequest(Request):
             index = decoded_uri.find('/', 7)
             return decoded_uri[index:]
 
-        return self.uri        
+        return decoded_uri       
 
     def getPathToLockIcon(self):
         if os.path.exists("lock.ico"): return "lock.ico"
