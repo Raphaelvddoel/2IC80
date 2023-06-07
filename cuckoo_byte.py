@@ -45,7 +45,7 @@ def ls_if(): # _ translate to - so the command will be ls-if
 
 @cli.command()
 @click.option('-i', '--ip', type=str, help='The IP of the target you want the mac address of')
-@click.option('-i', '--interface', type=str, help='The interface that you want to send packets on', default="")
+@click.option('-e', '--interface', type=str, help='The interface that you want to send packets on', default="")
 def target_mac(ip, interface): # _ translate to - so the command will be target-mac
     '''Get the mac adress of a specified IP adress'''
     click.echo(f'Target MAC address: {get_target_mac(ip, interface)}')
