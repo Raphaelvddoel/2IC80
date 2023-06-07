@@ -25,7 +25,7 @@ def target_mac(ip): # _ translate to - so the command will be target-mac
     click.echo(get_target_mac(ip))
 
 @cli.command()
-def sniff():
+def scan():
     scan_network()
 
 # ---- testing ----
@@ -34,8 +34,3 @@ def sniff():
 @click.option('-l', '--last-name', type=str, help='your last name', default='doe')
 def test(name, last_name):
     click.echo(f'hello {name} {last_name}')
-
-
-@cli.command()
-def testing_snif(ip): # _ translate to - so the command will be target-mac
-    sniffer.main()
