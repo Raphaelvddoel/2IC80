@@ -3,4 +3,4 @@ from .dns import *
 from .sniff import *
 from .ssl import *
 from .general import *
-from .sniffer import *
+from .scanner import *

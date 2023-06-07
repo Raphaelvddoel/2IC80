@@ -26,7 +26,7 @@ def target_mac(ip): # _ translate to - so the command will be target-mac
 
 @cli.command()
 def sniff():
-    sniffer()
+    scan_network()
 
 # ---- testing ----
 @cli.command()
