@@ -116,18 +116,18 @@ class ClientRequest(Request):
         elif (self.urlMonitor.isSecureFavicon(client, path)):
             logging.debug("Sending spoofed favicon response...")
             self.sendSpoofedFaviconResponse()
-        # CHANGE?: Dont send request over HTTP
-        else:
-            logging.debug("Sending request via SSL...")
-            self.proxyViaSSL(address, self.method, path, postData, headers,
-                             self.urlMonitor.getSecurePort(client, url))
-        # elif (self.urlMonitor.isSecureLink(client, url)):
+        # # CHANGE?: Dont send request over HTTP
+        # else:
         #     logging.debug("Sending request via SSL...")
         #     self.proxyViaSSL(address, self.method, path, postData, headers,
         #                      self.urlMonitor.getSecurePort(client, url))
-        # else:
-        #     logging.debug("Sending request via HTTP...")
-        #     self.proxyViaHTTP(address, self.method, path, postData, headers)
+        elif (self.urlMonitor.isSecureLink(client, url)):
+            logging.debug("Sending request via SSL...")
+            self.proxyViaSSL(address, self.method, path, postData, headers,
+                             self.urlMonitor.getSecurePort(client, url))
+        else:
+            logging.debug("Sending request via HTTP...")
+            self.proxyViaHTTP(address, self.method, path, postData, headers)
 
     def handleHostResolvedError(self, error):
         logging.warning("Host resolution error: " + str(error))

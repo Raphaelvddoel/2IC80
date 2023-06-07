@@ -94,7 +94,7 @@ class ServerConnection(HTTPClient):
         self.client.setResponseCode(int(code), message)
 
     def handleHeader(self, key, value):
-        # CHANGE: decoded
+        # CHANGE: decoded key and value
         decoded_key = key.decode('utf-8')
         decoded_value = value.decode('utf-8')
 
@@ -104,7 +104,6 @@ class ServerConnection(HTTPClient):
             value = self.replaceSecureLinks(decoded_value)
 
         if (decoded_key.lower() == 'content-type'):
-            # CHANGE? or decoded_value.find('font') != -1):
             if (decoded_value.find('image') != -1):
                 self.isImageRequest = True
                 logging.debug("Response is image content, not scanning...")
