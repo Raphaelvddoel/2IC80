@@ -122,6 +122,9 @@ def handle_arp_spoof(devices):
 
     spoof_ip = click.prompt("Which IP do you want to impersonate?")
 
+    while not spoof_ip == 'stop' and not validate_ip(spoof_ip):
+        spoof_ip = click.prompt("Invalid IP. Please enter the IP in the form 1.1.1.1, or type 'stop'")
+
     poison(victim_ip, spoof_ip)
 
 
@@ -181,3 +184,13 @@ def validate_ipv4_blocks(ip_blocks):
     match = re.match(pattern, ip_blocks)
 
     return match is not None
+
+
+def validate_ip(ip):
+    # Regular expression pattern for IP validation
+    pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+    
+    if re.match(pattern, ip):
+        return True
+
+    return False
