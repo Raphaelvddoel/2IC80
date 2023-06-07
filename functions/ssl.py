@@ -28,8 +28,9 @@ def start_ssl_strip(log_file, log_level, listen_port):
     
     gVersion = 'adjusted 0.9'
         
-    logging.basicConfig(level=log_level, format='%(asctime)s %(message)s',
-                        filename=log_file, filemode='w')
+    # logging.basicConfig(level=log_level, format='%(asctime)s %(message)s',
+    #                     filename=log_file, filemode='w')
+    logging.warning("[HTTP] Listening for TCP")
 
     URLMonitor.getInstance().setFaviconSpoofing(False)
     CookieCleaner.getInstance().setEnabled(False)
