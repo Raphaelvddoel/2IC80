@@ -2,6 +2,7 @@
 
 import subprocess
 import logging
+import click
 from twisted.web import http
 from twisted.internet import reactor
 
@@ -17,7 +18,7 @@ def setup_iptables_redirect(listen_port, reset=False):
             subprocess.run(['iptables', '-t', 'nat', '-A', 'PREROUTING', '-p', 'tcp', '--destination-port', '80', '-j', 'REDIRECT', '--to-port', listen_port])
 
     except Exception as e:
-        print(f'An error occurred while trying to setup iptables: {e}')
+        click.echo(f'An error occurred while trying to setup iptables: {e}')
 
 
 def set_ip_forwarding(enable=True):
@@ -42,7 +43,7 @@ def start_ssl_strip(log_file, log_level, listen_port):
 
     reactor.listenTCP(int(listen_port), stripping_factory)
    
-    print('\nsslstrip ' + g_version + ' by Moxie Marlinspike running...')
+    click.echo('\nsslstrip ' + g_version + ' by Moxie Marlinspike running...')
 
     reactor.run()
 
@@ -53,6 +54,6 @@ def ssl_strip_prepped(listen_port, log_file='sslstrip.log', log_level=logging.WA
         set_ip_forwarding()
         start_ssl_strip(log_file, log_level, listen_port)
     except KeyboardInterrupt:
-        print("stopping ssl-strip, please wait")
+        click.echo("stopping ssl-strip, please wait")
         set_ip_forwarding(False)
         setup_iptables_redirect(listen_port, True)

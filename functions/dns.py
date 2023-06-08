@@ -77,7 +77,7 @@ def analyze_packet(packet, table):
     query_name = get_packet_query_name(packet[DNS])
 
     if query_name in table:
-        print(f'Found a query to spoof: {query_name}')
+        click.echo(f'Found a query to spoof: {query_name}')
         spoof_packet(packet, query_name, table[query_name])
         return
 
@@ -109,7 +109,7 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip):
     # set spoofed answer
     spoofed_reply[DNS].an = DNSRR(rrname=spoofed_domain+'.', rdata=spoofed_ip, type="A", rclass="IN")
 
-    print("Sending spoofed packet")
+    click.echo("Sending spoofed packet")
 
     send(spoofed_reply)
 
