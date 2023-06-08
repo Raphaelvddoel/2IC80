@@ -16,7 +16,7 @@ def scan_network():
 
     device_details = get_devices(ip)
 
-    # no followup or print possible if no devices were found
+    # No followup or print possible if no devices were found
     if len(device_details) == 0:
         return click.echo("No devices found")
 
@@ -43,27 +43,27 @@ def get_devices(target_ip):
     Sends ARP request to every possible ip on subnet
     '''
 
-    # create ARP packet
+    # Create ARP packet
     # 1/24 is the range 0-255
     range = f'{target_ip}.1/24'
     arp = ARP(pdst=range)
 
-    # create the Ether broadcast packet
+    # Create the Ether broadcast packet
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
 
-    # make packet
+    # Make packet
     packet = ether/arp
 
     click.echo("Sending out ARP flood. Please wait...")
 
-    # check which
+    # Check which
     result = srp(packet, timeout=3, verbose=0)[0]
 
-    # list of all devices in the network
+    # List of all devices in the network
     devices = []
 
     for sent, received in result:
-        # for each response, get ip and mac of device and put it in the list
+        # For each response, get ip and mac of device and put it in the list
         devices.append({'ip': received.psrc, 'mac': received.hwsrc})
 
     return devices
@@ -77,7 +77,7 @@ def print_devices(devices):
     click.echo("Available devices in the network:")
     click.echo("IP" + " "*18+"MAC")
     for device in devices:
-        # use format to make 2 nicely formatted columns
+        # Use format to make 2 nicely formatted columns
         click.echo("{:16}    {}".format(device['ip'], device['mac']))
 
 
