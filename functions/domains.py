@@ -48,11 +48,14 @@ def remove_dns_domain():
         return
 
     # Convert index to key
-    index = int(index)  # Convert the input to an integer
-    keys = list(data.keys())  # Get the keys from the dictionary
-    selected_key = keys[index - 1]  # Subtract 1 from the index to match the 0-based index of the list
+    index = int(index)
+    keys = list(data.keys())
 
-    del data[selected_key]  # Delete the key-value pair
+    # Subtract 1 from the index to match the 0-based index of the list
+    selected_key = keys[index - 1]
+
+    # Delete the domain-IP pair
+    del data[selected_key]
 
     # Save the updated data back to the file
     store_domains(data)
@@ -66,6 +69,7 @@ def show_dns_domains():
 
     click.echo('The following combinations are stored')
 
+    # Print all stored domain-IP combinations to user
     for index, (key, value) in enumerate(data.items(), start=1):
         click.echo(f'{index}) {key}: {value}')
 

@@ -187,6 +187,10 @@ def validate_ipv4_blocks(ip_blocks):
 
 
 def validate_ip(ip):
+    '''
+    Validates IP entered by user
+    '''
+
     # Regular expression pattern for IP validation
     pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
 

