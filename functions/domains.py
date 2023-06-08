@@ -1,3 +1,5 @@
+'''This package contains everything related to the domain - IP combinations stored for dns spoofing'''
+
 import json
 import re
 import click
@@ -69,6 +71,10 @@ def show_dns_domains():
 
 
 def get_domains():
+    '''
+    Get all domain-IP combinations stored in FILENAME as a dict
+    '''
+
     with open(FILENAME, 'r') as file:
         try:
             return json.load(file)
@@ -77,11 +83,20 @@ def get_domains():
 
 
 def store_domains(data):
+    '''
+    Stores dict data in FILENAME as json
+    '''
+
     with open(FILENAME, 'w') as file:
         json.dump(data, file, indent=4, separators=(',', ': '))
 
 
 def validate_index(index, data):
+    '''
+    Validates index inputted by user
+    Returns true if index is a number 1 <= index <= len(list)
+    '''
+
     if not index.isdigit():
         return False
 
@@ -95,6 +110,10 @@ def validate_index(index, data):
 
 
 def strip_domain(domain):
+    '''
+    Removes www. from a domain if present
+    '''
+
     # Strip leading "www." if present
     if domain.startswith("www."):
         return domain[4:]
@@ -103,6 +122,10 @@ def strip_domain(domain):
 
 
 def validate_domain(domain):
+    '''
+    Validates domain inputted by user
+    '''
+
     # Regular expression pattern for domain validation
     pattern = r"^(?!:\/\/)(?:[a-zA-Z0-9-_]+\.){1,}[a-zA-Z]{2,}$"
 
@@ -113,6 +136,10 @@ def validate_domain(domain):
 
 
 def validate_ip(ip):
+    '''
+    Validates IP inputted by user
+    '''
+
     # Regular expression pattern for IP validation
     pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
 

