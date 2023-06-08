@@ -1,6 +1,6 @@
-import click
 import json
 import re
+import click
 
 FILENAME = 'storage/domains.json'
 
@@ -8,7 +8,7 @@ def add_dns_domain():
     '''
     Add domain to list of stored domains used when dns spoofing
     '''
-    
+
     domain = click.prompt('Which domain do you want to spoof? Please enter the domain without www.')
     ip = click.prompt('Which IP should it route to?')
 
@@ -21,7 +21,7 @@ def add_dns_domain():
     if not validate_ip(ip):
         click.echo('invalid ip')
         return
-    
+
     data = get_domains()
 
     data[domain] = ip
@@ -90,22 +90,22 @@ def validate_index(index, data):
 
     if 1 <= index <= data_length:
         return True
-    else:
-        return False
+    
+    return False
 
 
 def strip_domain(domain):
     # Strip leading "www." if present
     if domain.startswith("www."):
         return domain[4:]
-    
+
     return domain
 
 
 def validate_domain(domain):
     # Regular expression pattern for domain validation
     pattern = r"^(?!:\/\/)(?:[a-zA-Z0-9-_]+\.){1,}[a-zA-Z]{2,}$"
-    
+
     if re.match(pattern, domain):
         return True
 
@@ -115,7 +115,7 @@ def validate_domain(domain):
 def validate_ip(ip):
     # Regular expression pattern for IP validation
     pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
-    
+
     if re.match(pattern, ip):
         return True
 
