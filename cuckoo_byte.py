@@ -3,11 +3,9 @@ from functions import *
 from functions.general import list_interfaces, get_target_mac
 from functions.arp import poison, restore_arp, mitm_arp
 
-
 @click.group()
 def cli():
     pass
-
 
 # ------------------------------------------------- ARP ------------------------------------------------ #
 @cli.command()
@@ -19,6 +17,7 @@ def arp(victim, spoof, interface):
     click.echo('ARP Poisoning...')
     poison(victim, spoof, interface=interface)
 
+
 @cli.command()
 @click.option('-v', '--victim', type=str, help='The victim IP for ARP restoration')
 @click.option('-s', '--spoof', type=str, help='The spoofed IP for ARP restoration')
@@ -27,6 +26,7 @@ def restore(victim, spoof, interface):
     '''Restore the ARP table of the specified victim'''
     click.echo('Restoring ARP...')
     restore_arp(victim, spoof, interface)
+
 
 @cli.command()
 @click.option('-v1', '--victim1', type=str, help='IP of victim 1')
@@ -57,7 +57,7 @@ def ssl_strip(port): # _ translate to - so the command will be ssl-strip
     '''Start ssl stripping websites that want transition to HTTPS'''
     ssl_strip_prepped(port)
 
-# DNS
+# ------------------------------------------------ DNS ----------------------------------------------- #
 @cli.command
 @click.option('--single', is_flag=True, help='single domain to run the dns attack on')
 @click.option('--add-domain', is_flag=True, help='add domain to list of available domains to spoof')
@@ -83,13 +83,7 @@ def dns(single, add_domain, remove_domain, show_domains):
     # Spoof all stored domains
     spoof_dns_all()
 
+# ------------------------------------------------ Network scanning ----------------------------------------------- #
 @cli.command()
 def scan():
     scan_network()
-
-# ---- testing ----
-# @cli.command()
-# @click.option('-n', '--name', type=str, help='your first name', default='john')
-# @click.option('-l', '--last-name', type=str, help='your last name', default='doe')
-# def test(name, last_name):
-#     click.echo(f'hello {name} {last_name}')
