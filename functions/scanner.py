@@ -1,8 +1,8 @@
-from scapy.all import sniff, ARP, Ether, srp
 import re
+from scapy.all import ARP, Ether, srp
 import click
 import nmap
-from .arp import *
+from .arp import poison
 
 def scan_network():
     '''
@@ -19,7 +19,7 @@ def scan_network():
     # no followup or print possible if no devices were found
     if len(device_details) == 0:
         return click.echo("No devices found")
-    
+
     print_devices(device_details)
 
     handle_followup(device_details)
@@ -32,7 +32,7 @@ def get_requested_ip_blocks():
 
     ip = click.prompt("first 3 blocks of ipv4 like. 1.1.1")
 
-    while not ip == 'stop' and not validate_ipv4_blocks(ip):
+    while ip != 'stop' and not validate_ipv4_blocks(ip):
         ip = click.prompt("Invalid IP. Please enter the first 3 block of the ip like 1.1.1")
 
     return ip
@@ -50,7 +50,7 @@ def get_devices(target_ip):
 
     # create the Ether broadcast packet
     ether = Ether(dst="ff:ff:ff:ff:ff:ff")
-    
+
     # make packet
     packet = ether/arp
 
@@ -89,17 +89,17 @@ def handle_followup(devices):
     click.echo("What would you like to do?")
     click.echo("1) Scan ports of a specific IP.")
     click.echo("2) ARP spoof a specific IP.")
-    
+
     followup = click.prompt("Please enter 1 (port scan), or 2 (ARP spoofing). Enter any other key to stop")
 
     if followup == '1':
         handle_port_scan(devices)
         return
-    
+
     if followup == '2':
         handle_arp_spoof(devices)
         return
-    
+
     return
 
 
@@ -122,7 +122,7 @@ def handle_arp_spoof(devices):
 
     spoof_ip = click.prompt("Which IP do you want to impersonate?")
 
-    while not spoof_ip == 'stop' and not validate_ip(spoof_ip):
+    while spoof_ip != 'stop' and not validate_ip(spoof_ip):
         spoof_ip = click.prompt("Invalid IP. Please enter the IP in the form 1.1.1.1, or type 'stop'")
 
     poison(victim_ip, spoof_ip)
@@ -140,7 +140,7 @@ def get_specific_ip(devices):
     input = click.prompt("Please select the index of the IP that you want to choose")
 
     # Repeat question until input is valid
-    while not input == 'stop' and not validate_index(input, devices):
+    while input != 'stop' and not validate_index(input, devices):
         input = click.prompt("Please select the index of the IP that you want to choose, or type 'stop'")
 
     return devices[index]['ip']
@@ -152,7 +152,7 @@ def scan_ports(target_ip):
     '''
 
     scanner = nmap.PortScanner()
-    scanner.scan(target_ip, arguments='-p 1-65535') 
+    scanner.scan(target_ip, arguments='-p 1-65535')
     for host in scanner.all_hosts():
         click.echo("Open ports for", host, ":")
         for port in scanner[host].all_tcp():
@@ -169,7 +169,7 @@ def validate_index(input, devices):
         index = int(input)
         if 0 <= index < len(devices):
             return True
-        
+
         return False
     except ValueError:
         return False
@@ -189,7 +189,7 @@ def validate_ipv4_blocks(ip_blocks):
 def validate_ip(ip):
     # Regular expression pattern for IP validation
     pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
-    
+
     if re.match(pattern, ip):
         return True
 
