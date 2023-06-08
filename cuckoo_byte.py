@@ -73,6 +73,9 @@ def dns(single, add_domain, remove_domain, show_domains):
     # Spoof all stored domains
     spoof_dns_all()
 
+@cli.command()
+def scan():
+    scan_network()
 
 # ---- testing ----
 # @cli.command()
