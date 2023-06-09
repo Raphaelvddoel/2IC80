@@ -6,24 +6,9 @@ import click
 from scapy.all import DNS, UDP, IP, DNSRR, send, sniff
 from .domains import get_domains
 from .general import get_interface
-import subprocess
 
 # Port used for sniffing dns queries
-redirect_port = str(25518)
-port = f"udp port {redirect_port}" # Need to test something
-
-def setup_iptables_redirect(listen_port, reset=False):
-    try:
-        if reset:
-            # Run the iptables command to delete the redirection rule
-            subprocess.run(['iptables', '-t', 'nat', '-D', 'PREROUTING', '-p', 'udp', '--destination-port', '53', '-j', 'REDIRECT', '--to-port', listen_port])
-        else:
-            # Run the iptables command to redirect traffic from port 80 to port 25518
-            subprocess.run(['iptables', '-t', 'nat', '-A', 'PREROUTING', '-p', 'udp', '--destination-port', '53', '-j', 'REDIRECT', '--to-port', listen_port])
-
-    except Exception as e:
-        click.echo(f'An error occurred while trying to setup iptables: {e}')
-
+port = "udp port 53"
 
 # Global flag to indicate when to stop sniffing
 stop_event = threading.Event()
@@ -54,7 +39,7 @@ def start_attack(table, interface):
     '''
     Starts dns attack given a table chosen by user
     '''
-    setup_iptables_redirect(redirect_port)
+
     interface = get_interface(interface)
 
     # Start subthread running attack
@@ -69,7 +54,6 @@ def start_attack(table, interface):
         # Set stop_event when keyboard interrupt occurs
         stop_event.set()
         attack_thread.join()
-        setup_iptables_redirect(redirect_port, True)
 
 
 def attack(table, interface):
