@@ -25,7 +25,7 @@ def scan_network(interface):
 
     print_devices(device_details)
 
-    handle_followup(device_details)
+    handle_followup(device_details, interface)
 
 
 def get_requested_ip_blocks():
@@ -84,7 +84,7 @@ def print_devices(devices):
         click.echo("{:16}    {}".format(device['ip'], device['mac']))
 
 
-def handle_followup(devices):
+def handle_followup(devices, interface):
     '''
     Handles followup action of user after scanning network
     '''
@@ -100,7 +100,7 @@ def handle_followup(devices):
         return
 
     if followup == '2':
-        handle_arp_spoof(devices)
+        handle_arp_spoof(devices, interface)
         return
 
     return
@@ -116,7 +116,7 @@ def handle_port_scan(devices):
     scan_ports(ip)
 
 
-def handle_arp_spoof(devices):
+def handle_arp_spoof(devices, interface):
     '''
     Handles followup to ARP spoofing
     '''
@@ -128,7 +128,7 @@ def handle_arp_spoof(devices):
     while spoof_ip != 'stop' and not validate_ip(spoof_ip):
         spoof_ip = click.prompt("Invalid IP. Please enter the IP in the form 1.1.1.1, or type 'stop'")
 
-    poison(victim_ip, spoof_ip)
+    poison(victim_ip, spoof_ip, interface=interface)
 
 
 def get_specific_ip(devices):
