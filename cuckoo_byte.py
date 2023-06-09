@@ -63,7 +63,7 @@ def ssl_strip(port): # _ translate to - so the command will be ssl-strip
 @click.option('--add-domain', is_flag=True, help='add domain to list of available domains to spoof')
 @click.option('--remove-domain', is_flag=True, help='add domain to list of available domains to spoof')
 @click.option('--show-domains', is_flag=True, help='add domain to list of available domains to spoof')
-@click.option('--interface', type=str, help='The interface that you want to send packets on', default="")
+@click.option('-i', '--interface', type=str, help='The interface that you want to send packets on', default="")
 def dns(single, add_domain, remove_domain, show_domains, interface):
     if add_domain:
         add_dns_domain()
