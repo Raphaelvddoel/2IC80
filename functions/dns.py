@@ -9,7 +9,7 @@ from .general import get_interface
 import subprocess
 
 # Port used for sniffing dns queries
-redirect_port = 25518
+redirect_port = str(25518)
 port = f"udp port {redirect_port}" # Need to test something
 
 def setup_iptables_redirect(listen_port, reset=False):
