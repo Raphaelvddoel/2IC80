@@ -2,6 +2,17 @@
 
 from scapy.all import get_if_list, get_if_addr, get_if_hwaddr, ARP, Ether, srp, conf
 
+def get_interface(interface):
+    '''
+    Get network interface
+    '''
+    
+    if interface == "":
+        return conf.iface
+    
+    return interface
+
+
 def list_interfaces():
     '''
     Returns all interfaces of attacker
@@ -15,8 +26,8 @@ def get_my_ip(interface):
     Returns the IP of the attacker
     '''
 
-    if interface == "":
-        interface = conf.iface
+    interface = get_interface(interface)
+    
     return get_if_addr(interface)
 
 
@@ -25,8 +36,8 @@ def get_my_mac(interface):
     Returns the MAC address of the attacker
     '''
 
-    if interface == "":
-        interface = conf.iface
+    interface = get_interface(interface)
+
     return get_if_hwaddr(interface)
 
 
@@ -35,8 +46,8 @@ def get_my_ip_mac(interface):
     Returns the IP and MAC address of the attacker
     '''
 
-    if interface == "":
-        interface = conf.iface
+    interface = get_interface(interface)
+
     return {'ip': get_if_addr(interface), 'mac': get_if_hwaddr(interface)}
 
 
@@ -45,8 +56,7 @@ def get_target_mac(ip, interface):
     Returns the MAC addres of parameter 'ip'
     '''
 
-    if interface == "":
-        interface = conf.iface
+    interface = get_interface(interface)
 
     # Create arp packet object. pdst - destination host ip address
     arp_request = ARP(pdst=ip)

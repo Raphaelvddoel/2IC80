@@ -44,8 +44,8 @@ def ls_if(): # _ translate to - so the command will be ls-if
     click.echo(list_interfaces())
 
 @cli.command()
-@click.option('-i', '--ip', type=str, help='The IP of the target you want the mac address of')
-@click.option('-e', '--interface', type=str, help='The interface that you want to send packets on', default="")
+@click.option('-ip', '--ip', type=str, help='The IP of the target you want the mac address of')
+@click.option('-i', '--interface', type=str, help='The interface that you want to send packets on', default="")
 def target_mac(ip, interface): # _ translate to - so the command will be target-mac
     '''Get the mac adress of a specified IP adress'''
     click.echo(f'Target MAC address: {get_target_mac(ip, interface)}')
@@ -63,7 +63,8 @@ def ssl_strip(port): # _ translate to - so the command will be ssl-strip
 @click.option('--add-domain', is_flag=True, help='add domain to list of available domains to spoof')
 @click.option('--remove-domain', is_flag=True, help='add domain to list of available domains to spoof')
 @click.option('--show-domains', is_flag=True, help='add domain to list of available domains to spoof')
-def dns(single, add_domain, remove_domain, show_domains):
+@click.option('--interface', type=str, help='The interface that you want to send packets on', default="")
+def dns(single, add_domain, remove_domain, show_domains, interface):
     if add_domain:
         add_dns_domain()
         return
@@ -77,13 +78,14 @@ def dns(single, add_domain, remove_domain, show_domains):
         return
 
     if single:
-        spoof_dns_single()
+        spoof_dns_single(interface)
         return
 
     # Spoof all stored domains
-    spoof_dns_all()
+    spoof_dns_all(interface)
 
 # ------------------------------------------------ Network scanning ----------------------------------------------- #
 @cli.command()
-def scan():
-    scan_network()
+@click.option('-i', '--interface', type=str, help='The interface that you want to send packets on', default="")
+def scan(interface):
+    scan_network(interface)

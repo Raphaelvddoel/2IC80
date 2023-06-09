@@ -3,18 +3,21 @@ from scapy.all import ARP, Ether, srp
 import click
 import nmap
 from .arp import poison
+from .general import get_interface
 
-def scan_network():
+def scan_network(interface):
     '''
     Main function used to scan ips anc mac addresses on subnet
     '''
+
+    interface = get_interface(interface)
 
     ip = get_requested_ip_blocks()
 
     if ip == 'stop':
         return
 
-    device_details = get_devices(ip)
+    device_details = get_devices(ip, interface)
 
     # No followup or print possible if no devices were found
     if len(device_details) == 0:
@@ -38,7 +41,7 @@ def get_requested_ip_blocks():
     return ip
 
 
-def get_devices(target_ip):
+def get_devices(target_ip, interface):
     '''
     Sends ARP request to every possible ip on subnet
     '''
@@ -57,7 +60,7 @@ def get_devices(target_ip):
     click.echo("Sending out ARP flood. Please wait...")
 
     # Check which
-    result = srp(packet, timeout=3, verbose=0)[0]
+    result = srp(packet, timeout=3, verbose=0, iface=interface)[0]
 
     # List of all devices in the network
     devices = []

