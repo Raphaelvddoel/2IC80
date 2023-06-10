@@ -5,7 +5,7 @@ import time
 import click
 from scapy.all import DNS, UDP, IP, DNSRR, send, sniff, DNSQR, sr1
 from .domains import get_domains
-from .general import get_interface
+from .general import get_interface, get_my_ip
 import subprocess
 
 
@@ -89,7 +89,7 @@ def analyze_packet(packet, table, interface):
         
         spoof_packet(packet, query_name, table[query_name], interface)
         return
-    else:
+    elif packet[IP].src != get_my_ip(interface):
         click.echo(f'Sent the normal dns response')
         forward_dns(packet, query_name, interface)
         return
