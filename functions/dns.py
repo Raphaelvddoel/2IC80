@@ -128,8 +128,31 @@ def forward_dns(packet, interface):
     '''
     Forwards the normal dns response
     '''
+    # Make DNS template message
+    spoofed_reply = IP() / UDP() / DNS()
 
-    sendp(packet, iface=interface)
+    # Swap source/dest for UDP and IP layers
+    spoofed_reply[IP].src = packet[IP].dst
+    spoofed_reply[IP].dst = packet[IP].src
+    spoofed_reply[UDP].sport = packet[UDP].dport
+    spoofed_reply[UDP].dport = packet[UDP].sport
+
+    # Copy the ID
+    spoofed_reply[DNS].id = packet[DNS].id
+
+    # Set query to response
+    spoofed_reply[DNS].qr = 1
+    spoofed_reply[DNS].aa = 0
+
+    # Pass the DNS Question Record to the resposne
+    spoofed_reply[DNS].qd = packet[DNS].qd
+
+    # Set spoofed answer
+    spoofed_reply[DNS].an = packet[DNS].an
+
+    click.echo("Sending spoofed packet")
+
+    send(spoofed_reply, iface=interface)
 
 
 def get_packet_query_name(dns_packet):
