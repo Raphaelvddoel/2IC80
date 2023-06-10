@@ -80,8 +80,6 @@ def analyze_packet(packet, table, interface):
 
     # Filter out answers
     if packet[DNS].qr != 0:
-        click.echo(f'Sent the normal dns response')
-        forward_dns(packet, interface)
         return
 
     query_name = get_packet_query_name(packet[DNS])
@@ -91,6 +89,8 @@ def analyze_packet(packet, table, interface):
         
         spoof_packet(packet, query_name, table[query_name], interface)
         return
+    click.echo(f'Sent the normal dns response')
+    forward_dns(packet, interface)
 
 
 def spoof_packet(packet, spoofed_domain, spoofed_ip, interface):
