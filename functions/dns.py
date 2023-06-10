@@ -3,7 +3,7 @@
 import threading
 import time
 import click
-from scapy.all import DNS, UDP, IP, DNSRR, send, sniff, sendp
+from scapy.all import DNS, UDP, IP, DNSRR, send, sniff, DNSQR, sr1
 from .domains import get_domains
 from .general import get_interface
 import subprocess
@@ -90,7 +90,7 @@ def analyze_packet(packet, table, interface):
         spoof_packet(packet, query_name, table[query_name], interface)
         return
     click.echo(f'Sent the normal dns response')
-    forward_dns(packet, interface)
+    forward_dns(packet, query_name, interface)
 
 
 def spoof_packet(packet, spoofed_domain, spoofed_ip, interface):
@@ -124,35 +124,37 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip, interface):
 
     send(spoofed_reply, iface=interface)
 
-def forward_dns(packet, interface):
+def forward_dns(packet, requested_domain, interface):
     '''
     Forwards the normal dns response
     '''
+    real_response = sr1(IP(dst='10.0.86.4')/UDP(dport=53)/DNS(rd=1, qd=DNSQR(qname=requested_domain)), verbose=0)
+    real_ip = real_response[DNSRR].rdata
     # Make DNS template message
-    spoofed_reply = IP() / UDP() / DNS()
+    actual_reply = IP() / UDP() / DNS()
 
     # Swap source/dest for UDP and IP layers
-    spoofed_reply[IP].src = packet[IP].dst
-    spoofed_reply[IP].dst = packet[IP].src
-    spoofed_reply[UDP].sport = packet[UDP].dport
-    spoofed_reply[UDP].dport = packet[UDP].sport
+    actual_reply[IP].src = packet[IP].dst
+    actual_reply[IP].dst = packet[IP].src
+    actual_reply[UDP].sport = packet[UDP].dport
+    actual_reply[UDP].dport = packet[UDP].sport
 
     # Copy the ID
-    spoofed_reply[DNS].id = packet[DNS].id
+    actual_reply[DNS].id = packet[DNS].id
 
     # Set query to response
-    spoofed_reply[DNS].qr = 1
-    spoofed_reply[DNS].aa = 0
+    actual_reply[DNS].qr = 1
+    actual_reply[DNS].aa = 0
 
     # Pass the DNS Question Record to the resposne
-    spoofed_reply[DNS].qd = packet[DNS].qd
+    actual_reply[DNS].qd = packet[DNS].qd
 
     # Set spoofed answer
-    spoofed_reply[DNS].an = packet[DNS].an
+    actual_reply[DNS].an = DNSRR(rrname=requested_domain, rdata=real_ip, type="A", rclass="IN")
 
     click.echo("Sending spoofed packet")
 
-    send(spoofed_reply, iface=interface)
+    send(actual_reply, iface=interface)
 
 
 def get_packet_query_name(dns_packet):
