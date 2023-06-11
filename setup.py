@@ -5,9 +5,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name = 'CuckooByte',
-    version = '0.0.1',
+    version = '1.0.0',
     author = '-',
-    author_email = '-',
+    author_email = 'r.a.v.d.doel@student.tue.nl',
     license = 'MIT',
     description = 'A command line tool that provides simple penetration testing capabilities.',
     long_description = long_description,
