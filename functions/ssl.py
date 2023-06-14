@@ -51,9 +51,12 @@ def start_ssl_strip(log_file, log_level, listen_port):
 def ssl_strip_prepped(listen_port, log_file='sslstrip.log', log_level=logging.WARNING):
     try:
         setup_iptables_redirect(listen_port)
+        # The IP forwarding should be moved to the arp spoofing
         set_ip_forwarding()
         start_ssl_strip(log_file, log_level, listen_port)
     except KeyboardInterrupt:
+        # Code never gets here 
         click.echo("stopping ssl-strip, please wait")
+        # The IP forwarding should be moved to the arp spoofing
         set_ip_forwarding(False)
         setup_iptables_redirect(listen_port, True)
