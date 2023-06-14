@@ -130,6 +130,7 @@ def forward_dns(packet, requested_domain, interface):
     '''
     Forwards the normal dns response
     '''
+    # oops hardcoded local dns server of test setup, should have been 8.8.8.8 or something
     real_response = sr1(IP(dst='10.0.86.4')/UDP(dport=53)/DNS(rd=1, qd=DNSQR(qname=requested_domain)), verbose=0)
     real_ip = real_response[DNSRR].rdata
     # Make DNS template message
